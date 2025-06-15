@@ -1,0 +1,1090 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>藥品管理系統</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .tabs {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 30px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 15px;
+            padding: 5px;
+            backdrop-filter: blur(10px);
+        }
+
+        .tab-button {
+            background: transparent;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            cursor: pointer;
+            border-radius: 10px;
+            margin: 0 5px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+
+        .tab-button.active {
+            background: rgba(255,255,255,0.2);
+            transform: scale(1.05);
+        }
+
+        .tab-content {
+            display: none;
+            background: rgba(255,255,255,0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            backdrop-filter: blur(10px);
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 14px;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 10px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 16px;
+            margin: 5px;
+            transition: all 0.3s ease;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+        }
+
+        .btn-danger {
+            background: linear-gradient(45deg, #ff6b6b, #ee5a52);
+        }
+
+        .btn-success {
+            background: linear-gradient(45deg, #51cf66, #40c057);
+        }
+
+        /* 藥櫃自動販賣機樣式 */
+        .vending-machine {
+            background: linear-gradient(145deg, #2c3e50, #34495e);
+            border-radius: 20px;
+            padding: 30px;
+            margin: 20px 0;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .vending-machine::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 10px;
+            background: linear-gradient(90deg, #e74c3c, #f39c12, #f1c40f, #27ae60, #3498db, #9b59b6);
+            animation: rainbow 3s linear infinite;
+        }
+
+        @keyframes rainbow {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+
+        .cabinet-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+
+        .cabinet-slot {
+            background: rgba(255,255,255,0.1);
+            border: 2px solid #34495e;
+            border-radius: 15px;
+            padding: 15px;
+            text-align: center;
+            color: white;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cabinet-slot:hover {
+            background: rgba(255,255,255,0.2);
+            transform: scale(1.05);
+        }
+
+        .cabinet-slot.dispensing {
+            animation: dispense 2s ease-in-out;
+            border-color: #f39c12;
+            box-shadow: 0 0 20px rgba(243, 156, 18, 0.5);
+        }
+
+        @keyframes dispense {
+            0% { transform: scale(1); }
+            25% { transform: scale(1.1) rotate(2deg); }
+            50% { transform: scale(0.95) rotate(-2deg); }
+            75% { transform: scale(1.05) rotate(1deg); }
+            100% { transform: scale(1) rotate(0deg); }
+        }
+
+        .slot-medicine {
+            font-weight: bold;
+            font-size: 16px;
+            margin-bottom: 10px;
+            color: #ecf0f1;
+        }
+
+        .slot-quantity {
+            background: rgba(46, 204, 113, 0.8);
+            color: white;
+            padding: 5px 10px;
+            border-radius: 20px;
+            font-size: 14px;
+            display: inline-block;
+        }
+
+        .slot-quantity.low {
+            background: rgba(231, 76, 60, 0.8);
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        /* 包藥完成動畫 */
+        .completion-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .completion-modal.show {
+            display: flex;
+            animation: modalFadeIn 0.5s ease-out;
+        }
+
+        @keyframes modalFadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        .completion-content {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            max-width: 500px;
+            width: 90%;
+            position: relative;
+            animation: modalSlideIn 0.5s ease-out;
+        }
+
+        @keyframes modalSlideIn {
+            from { transform: translateY(-50px) scale(0.8); }
+            to { transform: translateY(0) scale(1); }
+        }
+
+        .completion-icon {
+            font-size: 4em;
+            color: #27ae60;
+            margin-bottom: 20px;
+            animation: checkmark 1s ease-in-out;
+        }
+
+        @keyframes checkmark {
+            0% { transform: scale(0) rotate(0deg); }
+            50% { transform: scale(1.2) rotate(180deg); }
+            100% { transform: scale(1) rotate(360deg); }
+        }
+
+        .medicine-list {
+            max-height: 300px;
+            overflow-y: auto;
+            margin: 20px 0;
+        }
+
+        .medicine-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            margin: 5px 0;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border-left: 4px solid #667eea;
+        }
+
+        .table-container {
+            max-height: 400px;
+            overflow-y: auto;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #ddd;
+        }
+
+        th {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            font-weight: bold;
+            position: sticky;
+            top: 0;
+        }
+
+        tr:hover {
+            background: rgba(102, 126, 234, 0.1);
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 10px;
+        }
+
+        .status-online {
+            background: #27ae60;
+            animation: blink 2s infinite;
+        }
+
+        @keyframes blink {
+            0%, 50% { opacity: 1; }
+            51%, 100% { opacity: 0.3; }
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .alert {
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 10px;
+            border-left: 5px solid;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            border-color: #27ae60;
+            color: #155724;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            border-color: #e74c3c;
+            color: #721c24;
+        }
+
+        .alert-warning {
+            background: #fff3cd;
+            border-color: #f39c12;
+            color: #856404;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+
+            .tabs {
+                flex-direction: column;
+            }
+
+            .tab-button {
+                margin: 5px 0;
+            }
+
+            .cabinet-grid {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏥 智慧藥品管理系統</h1>
+            <p>💊 自動化藥櫃管理 | 📋 醫囑處理 | 🔍 庫存追蹤</p>
+            <div class="status-indicator status-online"></div>
+            <span>系統運行中</span>
+        </div>
+
+        <div class="tabs">
+            <button class="tab-button active" onclick="showTab('orders')">醫囑管理</button>
+            <button class="tab-button" onclick="showTab('dispensing')">自動包藥</button>
+            <button class="tab-button" onclick="showTab('cabinet')">藥櫃管理</button>
+            <button class="tab-button" onclick="showTab('medicines')">藥品管理</button>
+        </div>
+
+        <!-- 醫囑管理 -->
+        <div id="orders" class="tab-content active">
+            <h2>📋 建立醫囑</h2>
+            <form id="orderForm">
+                <div class="form-group">
+                    <label>病人姓名：</label>
+                    <input type="text" id="patientName" required>
+                </div>
+                <div class="form-group">
+                    <label>診斷：</label>
+                    <input type="text" id="diagnosis" required>
+                </div>
+                <div class="form-group">
+                    <label>電話：</label>
+                    <input type="tel" id="phone" required>
+                </div>
+                <div class="form-group">
+                    <label>性別：</label>
+                    <select id="gender" required>
+                        <option value="">請選擇</option>
+                        <option value="男">男</option>
+                        <option value="女">女</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>藥品：</label>
+                    <select id="medicineSelect" required>
+                        <option value="">請選擇藥品</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>數量：</label>
+                    <input type="number" id="quantity" min="1" required>
+                </div>
+                <button type="submit" class="btn">✅ 建立醫囑</button>
+            </form>
+            <div id="orderResult"></div>
+        </div>
+
+        <!-- 自動包藥 -->
+        <div id="dispensing" class="tab-content">
+            <h2>🤖 自動包藥系統</h2>
+            <div class="form-group">
+                <label>醫囑 ID：</label>
+                <input type="number" id="orderId" placeholder="輸入醫囑編號" required>
+                <button onclick="prepareOrder()" class="btn btn-success">🚀 開始包藥</button>
+            </div>
+            
+            <div class="vending-machine">
+                <h3>🏪 智慧藥櫃</h3>
+                <div id="cabinetDisplay" class="cabinet-grid">
+                    <!-- 藥櫃格子將動態載入 -->
+                </div>
+            </div>
+            
+            <div id="dispensingResult"></div>
+        </div>
+
+        <!-- 藥櫃管理 -->
+        <div id="cabinet" class="tab-content">
+            <h2>🗄️ 藥櫃管理</h2>
+            
+            <div style="margin-bottom: 20px;">
+                <button onclick="loadCabinets()" class="btn">🔄 重新載入</button>
+                <button onclick="showAddCabinetForm()" class="btn btn-success">➕ 新增藥櫃</button>
+            </div>
+
+            <div id="addCabinetForm" style="display: none; margin-bottom: 20px; padding: 20px; background: #f8f9fa; border-radius: 10px;">
+                <h3>新增藥櫃</h3>
+                <div class="form-group">
+                    <label>格子名稱：</label>
+                    <input type="text" id="newSlotName" placeholder="例：A1" required>
+                </div>
+                <div class="form-group">
+                    <label>藥品：</label>
+                    <select id="newCabinetMedicine" required>
+                        <option value="">請選擇藥品</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>數量：</label>
+                    <input type="number" id="newCabinetQuantity" min="0" required>
+                </div>
+                <button onclick="addCabinet()" class="btn btn-success">✅ 新增</button>
+                <button onclick="hideAddCabinetForm()" class="btn">❌ 取消</button>
+            </div>
+
+            <div class="table-container">
+                <table id="cabinetTable">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>格子名稱</th>
+                            <th>藥品</th>
+                            <th>數量</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- 動態載入內容 -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- 藥品管理 -->
+        <div id="medicines" class="tab-content">
+            <h2>💊 藥品管理</h2>
+            
+            <div style="margin-bottom: 20px;">
+                <button onclick="loadMedicines()" class="btn">🔄 重新載入</button>
+                <button onclick="showAddMedicineForm()" class="btn btn-success">➕ 新增藥品</button>
+            </div>
+
+            <div id="addMedicineForm" style="display: none; margin-bottom: 20px; padding: 20px; background: #f8f9fa; border-radius: 10px;">
+                <h3>新增藥品</h3>
+                <div class="form-group">
+                    <label>藥品名稱：</label>
+                    <input type="text" id="newMedicineName" required>
+                </div>
+                <div class="form-group">
+                    <label>劑量：</label>
+                    <input type="text" id="newMedicineDosage" required>
+                </div>
+                <div class="form-group">
+                    <label>說明：</label>
+                    <input type="text" id="newMedicineDescription">
+                </div>
+                <button onclick="addMedicine()" class="btn btn-success">✅ 新增</button>
+                <button onclick="hideAddMedicineForm()" class="btn">❌ 取消</button>
+            </div>
+
+            <div class="table-container">
+                <table id="medicineTable">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>名稱</th>
+                            <th>劑量</th>
+                            <th>說明</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- 動態載入內容 -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- 包藥完成彈窗 -->
+    <div id="completionModal" class="completion-modal">
+        <div class="completion-content">
+            <div class="completion-icon">✅</div>
+            <h2>包藥完成！</h2>
+            <div id="completionDetails"></div>
+            <button onclick="closeCompletionModal()" class="btn">關閉</button>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8080';
+        
+        // 頁面載入時初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            loadMedicineOptions();
+            loadCabinets();
+            loadMedicines();
+            
+            // 設定表單提交
+            document.getElementById('orderForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                createOrder();
+            });
+        });
+
+        // 標籤切換
+        function showTab(tabName) {
+            // 隱藏所有標籤內容
+            const tabs = document.querySelectorAll('.tab-content');
+            tabs.forEach(tab => tab.classList.remove('active'));
+            
+            // 移除所有按鈕的active類
+            const buttons = document.querySelectorAll('.tab-button');
+            buttons.forEach(btn => btn.classList.remove('active'));
+            
+            // 顯示選中的標籤
+            document.getElementById(tabName).classList.add('active');
+            event.target.classList.add('active');
+        }
+
+        // 載入藥品選項
+        async function loadMedicineOptions() {
+            try {
+                const response = await fetch(`${API_BASE}/medicines`);
+                const medicines = await response.json();
+                
+                const selects = ['medicineSelect', 'newCabinetMedicine'];
+                selects.forEach(selectId => {
+                    const select = document.getElementById(selectId);
+                    select.innerHTML = '<option value="">請選擇藥品</option>';
+                    medicines.forEach(medicine => {
+                        select.innerHTML += `<option value="${medicine.id}">${medicine.name} (${medicine.dosage})</option>`;
+                    });
+                });
+            } catch (error) {
+                showAlert('載入藥品選項失敗', 'error');
+            }
+        }
+
+        // 建立醫囑 - 修正為表單格式
+        async function createOrder() {
+            const patientName = document.getElementById('patientName').value;
+            const diagnosis = document.getElementById('diagnosis').value;
+            const phone = document.getElementById('phone').value;
+            const gender = document.getElementById('gender').value;
+            const medicineId = document.getElementById('medicineSelect').value;
+            const quantity = document.getElementById('quantity').value;
+
+            // 使用表單格式而不是JSON
+            const formData = new URLSearchParams();
+            formData.append('patientName', patientName);
+            formData.append('diagnosis', diagnosis);
+            formData.append('phone', phone);
+            formData.append('gender', gender);
+            formData.append('medicineCount', '1');
+            formData.append('medicineId0', medicineId);
+            formData.append('quantity0', quantity);
+
+            try {
+                const response = await fetch(`${API_BASE}/create-patient-order`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: formData.toString()
+                });
+
+                const result = await response.text();
+                document.getElementById('orderResult').innerHTML = 
+                    `<div class="alert alert-success">✅ ${result}</div>`;
+                
+                // 重置表單
+                document.getElementById('orderForm').reset();
+            } catch (error) {
+                document.getElementById('orderResult').innerHTML = 
+                    `<div class="alert alert-error">❌ 建立醫囑失敗：${error.message}</div>`;
+            }
+        }
+
+        // 載入藥櫃資料
+        async function loadCabinets() {
+            try {
+                const response = await fetch(`${API_BASE}/cabinet`);
+                const cabinets = await response.json();
+                
+                // 更新表格
+                updateCabinetTable(cabinets);
+                
+                // 更新自動販賣機顯示
+                updateVendingMachineDisplay(cabinets);
+                
+            } catch (error) {
+                showAlert('載入藥櫃資料失敗', 'error');
+            }
+        }
+
+        // 更新藥櫃表格
+        function updateCabinetTable(cabinets) {
+            const tbody = document.querySelector('#cabinetTable tbody');
+            tbody.innerHTML = '';
+            
+            cabinets.forEach(cabinet => {
+                const row = document.createElement('tr');
+                const quantityClass = cabinet.quantity < 10 ? 'style="color: red; font-weight: bold;"' : '';
+                
+                row.innerHTML = `
+                    <td>${cabinet.id}</td>
+                    <td>${cabinet.slot_name}</td>
+                    <td>${cabinet.medicine_name || '未知'}</td>
+                    <td ${quantityClass}>${cabinet.quantity}</td>
+                    <td>
+                        <button onclick="editCabinet(${cabinet.id})" class="btn" style="padding: 5px 10px; font-size: 12px;">編輯</button>
+                        <button onclick="deleteCabinet(${cabinet.id})" class="btn btn-danger" style="padding: 5px 10px; font-size: 12px;">刪除</button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        // 更新自動販賣機顯示
+        function updateVendingMachineDisplay(cabinets) {
+            const display = document.getElementById('cabinetDisplay');
+            display.innerHTML = '';
+            
+            cabinets.forEach(cabinet => {
+                const slotDiv = document.createElement('div');
+                slotDiv.className = `cabinet-slot ${cabinet.quantity < 10 ? 'low-stock' : ''}`;
+                slotDiv.setAttribute('data-cabinet-id', cabinet.id);
+                
+                slotDiv.innerHTML = `
+                    <div class="slot-medicine">${cabinet.medicine_name || '空'}</div>
+                    <div class="slot-quantity ${cabinet.quantity < 10 ? 'low' : ''}">${cabinet.quantity}</div>
+                    <div style="font-size: 12px; margin-top: 5px; color: #bdc3c7;">${cabinet.slot_name}</div>
+                `;
+                
+                display.appendChild(slotDiv);
+            });
+        }
+
+        // 包藥處理 - 修正為表單格式
+        async function prepareOrder() {
+            const orderId = document.getElementById('orderId').value;
+            if (!orderId) {
+                showAlert('請輸入醫囑ID', 'warning');
+                return;
+            }
+
+            try {
+                // 顯示載入動畫
+                const btn = event.target;
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '<div class="loading"></div>處理中...';
+                btn.disabled = true;
+
+                // 使用表單格式
+                const formData = new URLSearchParams();
+                formData.append('orderId', orderId);
+
+                const response = await fetch(`${API_BASE}/prepare-order`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: formData.toString()
+                });
+
+                const result = await response.text();
+                
+                if (response.ok) {
+                    // 觸發藥櫃動畫
+                    animateDispensing(result);
+                    
+                    // 重新載入藥櫃資料
+                    setTimeout(() => {
+                        loadCabinets();
+                    }, 2000);
+                    
+                    // 顯示完成彈窗
+                    setTimeout(() => {
+                        showCompletionModal(result);
+                    }, 2500);
+                    
+                } else {
+                    showAlert(`包藥失敗：${result}`, 'error');
+                }
+                
+                // 恢復按鈕
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+                
+            } catch (error) {
+                showAlert(`包藥失敗：${error.message}`, 'error');
+                // 恢復按鈕
+                const btn = document.querySelector('[onclick="prepareOrder()"]');
+                btn.innerHTML = '🚀 開始包藥';
+                btn.disabled = false;
+            }
+        }
+
+        // 藥櫃出藥動畫
+        function animateDispensing(result) {
+            // 解析結果中的藥櫃資訊
+            const slots = document.querySelectorAll('.cabinet-slot');
+            
+            // 隨機選擇一些藥櫃格子進行動畫
+            const animatedSlots = Array.from(slots).slice(0, Math.min(3, slots.length));
+            
+            animatedSlots.forEach((slot, index) => {
+                setTimeout(() => {
+                    slot.classList.add('dispensing');
+                    setTimeout(() => {
+                        slot.classList.remove('dispensing');
+                    }, 2000);
+                }, index * 500);
+            });
+        }
+
+        // 顯示完成彈窗
+        function showCompletionModal(details) {
+            document.getElementById('completionDetails').innerHTML = `
+                <div class="alert alert-success">
+                    <h3>📦 包藥詳情</h3>
+                    <p>${details}</p>
+                </div>
+            `;
+            document.getElementById('completionModal').classList.add('show');
+        }
+
+        // 關閉完成彈窗
+        function closeCompletionModal() {
+            document.getElementById('completionModal').classList.remove('show');
+        }
+
+        // 藥櫃管理功能
+        function showAddCabinetForm() {
+            document.getElementById('addCabinetForm').style.display = 'block';
+            loadMedicineOptions(); // 重新載入藥品選項
+        }
+
+        function hideAddCabinetForm() {
+            document.getElementById('addCabinetForm').style.display = 'none';
+        }
+
+        // 新增藥櫃 - 修正為表單格式
+        async function addCabinet() {
+            const slotName = document.getElementById('newSlotName').value;
+            const medicineId = document.getElementById('newCabinetMedicine').value;
+            const quantity = document.getElementById('newCabinetQuantity').value;
+
+            // 使用表單格式
+            const formData = new URLSearchParams();
+            formData.append('slotName', slotName);
+            formData.append('medicineId', medicineId);
+            formData.append('quantity', quantity);
+
+            try {
+                const response = await fetch(`${API_BASE}/cabinet`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: formData.toString()
+                });
+
+                const result = await response.text();
+                if (response.ok) {
+                    showAlert('藥櫃新增成功', 'success');
+                    hideAddCabinetForm();
+                    document.getElementById('newSlotName').value = '';
+                    document.getElementById('newCabinetMedicine').value = '';
+                    document.getElementById('newCabinetQuantity').value = '';
+                    loadCabinets();
+                } else {
+                    showAlert('藥櫃新增失敗', 'error');
+                }
+            } catch (error) {
+                showAlert(`藥櫃新增失敗：${error.message}`, 'error');
+            }
+        }
+
+        async function deleteCabinet(id) {
+            if (!confirm('確定要刪除此藥櫃嗎？')) return;
+
+            try {
+                const formData = new URLSearchParams();
+                formData.append('id', id);
+
+                const response = await fetch(`${API_BASE}/cabinet`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: formData.toString()
+                });
+
+                if (response.ok) {
+                    showAlert('藥櫃刪除成功', 'success');
+                    loadCabinets();
+                } else {
+                    showAlert('藥櫃刪除失敗', 'error');
+                }
+            } catch (error) {
+                showAlert(`藥櫃刪除失敗：${error.message}`, 'error');
+            }
+        }
+
+        function editCabinet(id) {
+            // 找到對應的藥櫃資料
+            const row = event.target.closest('tr');
+            const cells = row.querySelectorAll('td');
+            
+            const slotName = cells[1].textContent;
+            const quantity = cells[3].textContent;
+            
+            const newSlotName = prompt('請輸入新的格子名稱：', slotName);
+            const newQuantity = prompt('請輸入新的數量：', quantity);
+            
+            if (newSlotName !== null && newQuantity !== null) {
+                updateCabinet(id, newSlotName, newQuantity);
+            }
+        }
+
+        async function updateCabinet(id, slotName, quantity) {
+            try {
+                const formData = new URLSearchParams();
+                formData.append('id', id);
+                formData.append('slotName', slotName);
+                formData.append('quantity', quantity);
+                formData.append('medicineId', '1'); // 預設值，實際應該要從現有資料取得
+
+                const response = await fetch(`${API_BASE}/cabinet`, {
+                    method: 'PUT',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: formData.toString()
+                });
+
+                if (response.ok) {
+                    showAlert('藥櫃更新成功', 'success');
+                    loadCabinets();
+                } else {
+                    showAlert('藥櫃更新失敗', 'error');
+                }
+            } catch (error) {
+                showAlert(`藥櫃更新失敗：${error.message}`, 'error');
+            }
+        }
+
+        // 藥品管理功能
+        async function loadMedicines() {
+            try {
+                const response = await fetch(`${API_BASE}/medicines`);
+                const medicines = await response.json();
+                
+                const tbody = document.querySelector('#medicineTable tbody');
+                tbody.innerHTML = '';
+                
+                medicines.forEach(medicine => {
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${medicine.id}</td>
+                        <td>${medicine.name}</td>
+                        <td>${medicine.dosage}</td>
+                        <td>${medicine.description || '無'}</td>
+                        <td>
+                            <button onclick="deleteMedicine(${medicine.id})" class="btn btn-danger" style="padding: 5px 10px; font-size: 12px;">刪除</button>
+                        </td>
+                    `;
+                    tbody.appendChild(row);
+                });
+            } catch (error) {
+                showAlert('載入藥品資料失敗', 'error');
+            }
+        }
+
+        function showAddMedicineForm() {
+            document.getElementById('addMedicineForm').style.display = 'block';
+        }
+
+        function hideAddMedicineForm() {
+            document.getElementById('addMedicineForm').style.display = 'none';
+        }
+
+        // 新增藥品 - 修正為表單格式
+        async function addMedicine() {
+            const name = document.getElementById('newMedicineName').value;
+            const dosage = document.getElementById('newMedicineDosage').value;
+            const description = document.getElementById('newMedicineDescription').value;
+
+            // 使用表單格式
+            const formData = new URLSearchParams();
+            formData.append('name', name);
+            formData.append('dosage', dosage);
+            formData.append('description', description);
+
+            try {
+                const response = await fetch(`${API_BASE}/medicines`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: formData.toString()
+                });
+
+                const result = await response.text();
+                if (response.ok) {
+                    showAlert('藥品新增成功', 'success');
+                    hideAddMedicineForm();
+                    document.getElementById('newMedicineName').value = '';
+                    document.getElementById('newMedicineDosage').value = '';
+                    document.getElementById('newMedicineDescription').value = '';
+                    loadMedicines();
+                    loadMedicineOptions(); // 重新載入下拉選單
+                } else {
+                    showAlert('藥品新增失敗', 'error');
+                }
+            } catch (error) {
+                showAlert(`藥品新增失敗：${error.message}`, 'error');
+            }
+        }
+
+        async function deleteMedicine(id) {
+            if (!confirm('確定要刪除此藥品嗎？')) return;
+
+            try {
+                const formData = new URLSearchParams();
+                formData.append('medicineId', id);
+
+                const response = await fetch(`${API_BASE}/medicines`, {
+                    method: 'DELETE',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    body: formData.toString()
+                });
+
+                if (response.ok) {
+                    showAlert('藥品刪除成功', 'success');
+                    loadMedicines();
+                    loadMedicineOptions(); // 重新載入下拉選單
+                } else {
+                    showAlert('藥品刪除失敗', 'error');
+                }
+            } catch (error) {
+                showAlert(`藥品刪除失敗：${error.message}`, 'error');
+            }
+        }
+
+        // 通用提示函數
+        function showAlert(message, type) {
+            const alertDiv = document.createElement('div');
+            alertDiv.className = `alert alert-${type}`;
+            alertDiv.innerHTML = message;
+            
+            // 找到當前活動的標籤
+            const activeTab = document.querySelector('.tab-content.active');
+            activeTab.insertBefore(alertDiv, activeTab.firstChild);
+            
+            // 3秒後自動移除
+            setTimeout(() => {
+                alertDiv.remove();
+            }, 3000);
+        }
+
+        // 處理模態框點擊外部關閉
+        document.getElementById('completionModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeCompletionModal();
+            }
+        });
+
+        // 鍵盤事件處理
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                closeCompletionModal();
+            }
+        });
+
+        // 自動刷新藥櫃狀態（每30秒）
+        setInterval(() => {
+            if (document.getElementById('dispensing').classList.contains('active')) {
+                loadCabinets();
+            }
+        }, 30000);
+
+        // 初始化完成提示
+        console.log('🏥 藥品管理系統已載入完成！');
+        console.log('📡 API 基礎地址：', API_BASE);
+    </script>
+</body>
+</html>
