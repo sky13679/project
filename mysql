@@ -1,0 +1,69 @@
+-- 建立資料庫
+CREATE DATABASE IF NOT EXISTS medicine_db;
+USE medicine_db;
+
+-- 病人表
+CREATE TABLE Patient (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    diagnosis VARCHAR(255),
+    phone VARCHAR(20),
+    gender VARCHAR(10)
+);
+
+-- 藥品表
+CREATE TABLE Medicine (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(100) NOT NULL,
+    dosage VARCHAR(50),
+    description TEXT
+);
+
+-- 藥櫃表
+CREATE TABLE Cabinet (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    slot_name VARCHAR(50) NOT NULL,
+    quantity INT DEFAULT 0,
+    medicine_id INT,
+    FOREIGN KEY (medicine_id) REFERENCES Medicine(id) ON DELETE CASCADE
+);
+
+-- 醫囑主表
+CREATE TABLE MedicalOrder (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    patient_id INT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (patient_id) REFERENCES Patient(id) ON DELETE CASCADE
+);
+
+-- 醫囑明細表
+CREATE TABLE MedicalOrderItem (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    order_id INT NOT NULL,
+    medicine_id INT NOT NULL,
+    quantity INT NOT NULL,
+    FOREIGN KEY (order_id) REFERENCES MedicalOrder(id) ON DELETE CASCADE,
+    FOREIGN KEY (medicine_id) REFERENCES Medicine(id) ON DELETE CASCADE
+);
+
+-- 插入測試資料
+INSERT INTO Medicine (name, dosage, description) VALUES
+('普拿疼', '500mg', '解熱鎮痛劑'),
+('阿斯匹靈', '100mg', '抗血小板聚集劑'),
+('維他命C', '1000mg', '維生素補充劑'),
+('胃藥', '40mg', '制酸劑'),
+('感冒糖漿', '5ml', '綜合感冒藥');
+
+INSERT INTO Cabinet (slot_name, quantity, medicine_id) VALUES
+('A1', 50, 1),
+('A2', 30, 2),
+('B1', 100, 3),
+('B2', 25, 4),
+('C1', 40, 5),
+('A3', 20, 1),
+('B3', 15, 2);
+
+INSERT INTO Patient (name, diagnosis, phone, gender) VALUES
+('王小明', '感冒', '0912345678', '男'),
+('李小華', '頭痛', '0923456789', '女'),
+('張大同', '胃痛', '0934567890', '男');
