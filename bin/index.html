@@ -902,48 +902,52 @@
             }
         }
 
-        function editCabinet(id) {
-            // 找到對應的藥櫃資料
-            const row = event.target.closest('tr');
-            const cells = row.querySelectorAll('td');
-            
-            const slotName = cells[1].textContent;
-            const quantity = cells[3].textContent;
-            
-            const newSlotName = prompt('請輸入新的格子名稱：', slotName);
-            const newQuantity = prompt('請輸入新的數量：', quantity);
-            
-            if (newSlotName !== null && newQuantity !== null) {
-                updateCabinet(id, newSlotName, newQuantity);
-            }
-        }
-
-        async function updateCabinet(id, slotName, quantity) {
-            try {
-                const formData = new URLSearchParams();
-                formData.append('id', id);
-                formData.append('slotName', slotName);
-                formData.append('quantity', quantity);
-                formData.append('medicineId', '1'); // 預設值，實際應該要從現有資料取得
-
-                const response = await fetch(`${API_BASE}/cabinet`, {
-                    method: 'PUT',
-                    headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded',
-                    },
-                    body: formData.toString()
-                });
-
-                if (response.ok) {
-                    showAlert('藥櫃更新成功', 'success');
-                    loadCabinets();
-                } else {
-                    showAlert('藥櫃更新失敗', 'error');
+            function editCabinet(id) {
+                // 找到對應的藥櫃資料
+                const row = event.target.closest('tr');
+                const cells = row.querySelectorAll('td');
+                
+                const slotName = cells[1].textContent;
+                const medicineName = cells[2].textContent; // 藥品名稱
+                const quantity = cells[3].textContent;
+                
+                const newSlotName = prompt('請輸入新的格子名稱：', slotName);
+                const newMedicineName = prompt('請輸入新的藥品名稱：', medicineName);
+                const newQuantity = prompt('請輸入新的數量：', quantity);
+                
+                if (newSlotName !== null && newMedicineName !== null && newQuantity !== null) {
+                    updateCabinet(id, newSlotName, newQuantity, newMedicineName);
                 }
-            } catch (error) {
-                showAlert(`藥櫃更新失敗：${error.message}`, 'error');
             }
-        }
+
+            // 修改 updateCabinet 函數
+            async function updateCabinet(id, slotName, quantity, medicineName) {
+                try {
+                    const formData = new URLSearchParams();
+                    formData.append('id', id);
+                    formData.append('slotName', slotName);
+                    formData.append('quantity', quantity);
+                    formData.append('medicineId', '1'); // 這裡需要根據實際邏輯調整
+                    formData.append('medicineName', medicineName); // 新增藥品名稱
+
+                    const response = await fetch(`${API_BASE}/cabinet`, {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                        body: formData.toString()
+                    });
+
+                    if (response.ok) {
+                        showAlert('藥櫃更新成功', 'success');
+                        loadCabinets(); // 重新載入藥櫃資料
+                    } else {
+                        showAlert('藥櫃更新失敗', 'error');
+                    }
+                } catch (error) {
+                    showAlert(`藥櫃更新失敗：${error.message}`, 'error');
+                }
+            }
 
         // 藥品管理功能
         async function loadMedicines() {

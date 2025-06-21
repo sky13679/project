@@ -360,66 +360,65 @@ public class MedicineService {
         }
     }
     
-    // 新增藥櫃
-    public String addCabinet(String slotName, int quantity, int medicineId) {
-        String sql = "INSERT INTO Cabinet (slot_name, quantity, medicine_id) VALUES (?, ?, ?)";
-        
-        try (Connection conn = DbConnect.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
-            
-            System.out.println("新增藥櫃: " + slotName + ", 數量: " + quantity + ", 藥品ID: " + medicineId);
-            
-            stmt.setString(1, slotName);
-            stmt.setInt(2, quantity);
-            stmt.setInt(3, medicineId);
-            
-            int result = stmt.executeUpdate();
-            
-            if (result > 0) {
-                System.out.println("藥櫃新增成功");
-                return "{\"success\": true, \"message\": \"藥櫃新增成功\"}";
-            } else {
-                System.out.println("藥櫃新增失敗 - 沒有影響任何行");
-                return "{\"success\": false, \"message\": \"藥櫃新增失敗\"}";
+            // 新增藥櫃
+            public String addCabinet(String slotName, int quantity, int medicineId) {
+                String sql = "INSERT INTO Cabinet (slot_name, quantity, medicine_id) VALUES (?, ?, ?)";
+                
+                try (Connection conn = DbConnect.getConnection();
+                    PreparedStatement stmt = conn.prepareStatement(sql)) {
+                    
+                    System.out.println("新增藥櫃: " + slotName + ", 數量: " + quantity + ", 藥品ID: " + medicineId);
+                    
+                    stmt.setString(1, slotName);
+                    stmt.setInt(2, quantity);
+                    stmt.setInt(3, medicineId);
+                    
+                    int result = stmt.executeUpdate();
+                    
+                    if (result > 0) {
+                        System.out.println("藥櫃新增成功");
+                        return "{\"success\": true, \"message\": \"藥櫃新增成功\"}";
+                    } else {
+                        System.out.println("藥櫃新增失敗 - 沒有影響任何行");
+                        return "{\"success\": false, \"message\": \"藥櫃新增失敗\"}";
+                    }
+                    
+                } catch (SQLException e) {
+                    System.err.println("新增藥櫃失敗: " + e.getMessage());
+                    e.printStackTrace();
+                    return "{\"success\": false, \"message\": \"藥櫃新增失敗: " + e.getMessage() + "\"}";
+                }
             }
             
-        } catch (SQLException e) {
-            System.err.println("新增藥櫃失敗: " + e.getMessage());
-            e.printStackTrace();
-            return "{\"success\": false, \"message\": \"藥櫃新增失敗: " + e.getMessage() + "\"}";
-        }
-    }
-    
-    // 修改藥櫃
-    public String updateCabinet(int id, String slotName, int quantity, int medicineId) {
-        String sql = "UPDATE Cabinet SET slot_name = ?, quantity = ?, medicine_id = ? WHERE id = ?";
-        
-        try (Connection conn = DbConnect.getConnection();
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+            public String updateCabinet(int id, String slotName, int quantity, int medicineId) {
+            String sql = "UPDATE Cabinet SET slot_name = ?, quantity = ?, medicine_id = ? WHERE id = ?";
             
-            System.out.println("修改藥櫃ID: " + id + ", 新資料: " + slotName + ", " + quantity + ", " + medicineId);
-            
-            stmt.setString(1, slotName);
-            stmt.setInt(2, quantity);
-            stmt.setInt(3, medicineId);
-            stmt.setInt(4, id);
-            
-            int result = stmt.executeUpdate();
-            
-            if (result > 0) {
-                System.out.println("藥櫃修改成功");
-                return "{\"success\": true, \"message\": \"藥櫃修改成功\"}";
-            } else {
-                System.out.println("找不到指定藥櫃");
-                return "{\"success\": false, \"message\": \"找不到指定藥櫃\"}";
+            try (Connection conn = DbConnect.getConnection();
+                PreparedStatement stmt = conn.prepareStatement(sql)) {
+                
+                System.out.println("修改藥櫃ID: " + id + ", 新資料: " + slotName + ", " + quantity + ", " + medicineId);
+                
+                stmt.setString(1, slotName);
+                stmt.setInt(2, quantity);
+                stmt.setInt(3, medicineId);
+                stmt.setInt(4, id);
+                
+                int result = stmt.executeUpdate();
+                
+                if (result > 0) {
+                    System.out.println("藥櫃修改成功");
+                    return "{\"success\": true, \"message\": \"藥櫃修改成功\"}";
+                } else {
+                    System.out.println("找不到指定藥櫃");
+                    return "{\"success\": false, \"message\": \"找不到指定藥櫃\"}";
+                }
+                
+            } catch (SQLException e) {
+                System.err.println("修改藥櫃失敗: " + e.getMessage());
+                e.printStackTrace();
+                return "{\"success\": false, \"message\": \"藥櫃修改失敗: " + e.getMessage() + "\"}";
             }
-            
-        } catch (SQLException e) {
-            System.err.println("修改藥櫃失敗: " + e.getMessage());
-            e.printStackTrace();
-            return "{\"success\": false, \"message\": \"藥櫃修改失敗: " + e.getMessage() + "\"}";
         }
-    }
     
     // 刪除藥櫃
     public String deleteCabinet(int id) {

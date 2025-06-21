@@ -200,6 +200,7 @@ public class SimpleAPIServer {
                         String putResponse = medicineService.updateCabinet(putId, putSlotName, putQuantity, putMedicineId);
                         sendResponse(exchange, putResponse);
                         break;
+
                         
                     case "DELETE":
                         String deleteBody = getRequestBody(exchange);
